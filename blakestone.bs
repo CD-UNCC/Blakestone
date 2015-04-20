@@ -1,8 +1,28 @@
 key:
-	"value"
-	0
-	1
-	.5f
-	SecondKey: "singleElement"
-	thirdKey: 
-		1	2	3	4	5 
+	"value"     # Comment for index 0
+	"value2"    # Comment for index 1
+	1           # Comment for index 2
+	0.5         # Comment for index 3
+	newKey: "A single value"
+	newArray:
+		"An array in the parent"
+		"Simply keep tabbing"
+		"To indicate children"
+	"And go back one"
+	"To be back in parent"
+	: 120 # A value with no key before the colon defaults to the index
+	: # An array at index 7
+		"Value in array"
+	template:
+		randomIntSelection: %d[2,3,5,7,13,17]
+		randomIntRange: %d[1-100]
+		randomIntBoth: %d[1,3,5-10,13,17]
+		randomFloatSelection: %f[3.5,1,2]
+		randomFloatRange: %f[0-1]
+		randomFloatPrecision: %f.6[0-1]
+		randomFloatBoth: %f.1[0-1, 2, 5, 10]
+		randomStringSelection: %s[strA,strB,strC]
+		randomStringWithQuotes: %s["strA,strB",strC]
+		randomStringRegex1: %s/[0-9]{3}-[0-9]{3}-[0-9]{4}/
+		randomStringRegex2: %s/(choice1|choice2|choice3|) is the best!/
+		

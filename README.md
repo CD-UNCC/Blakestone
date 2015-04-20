@@ -33,3 +33,33 @@ Template Prototyping built in
         : 120 # A value with no key before the colon defaults to the index
         : # An array at index 7
             "Value in array"
+            
+# Template Notation
+Template Repetition
+* %t{3} # Indicates that the elements that are children to this should be
+repeated three times and an array of the results made
+* %t{1,3} # Will make 1 to 3 copies of the following template
+
+Integers
+* %d[X,Y,Z] # Selection
+* %d[N-M] # Range, equivalent to %d[N, N+1, ..., M-1, M]
+* %d[X, Y, N-M, A, B] # Combination
+* %ld for longs
+
+Floating Points
+* %f[X,Y,Z] # Selection
+* %f[N-M] # Range, using default precision of 2. 
+EX: %f[0-1] can give values from 0.00 to 1.00
+* %f.6[N-M] # Range with precision of 6
+* %f[X,Y,N-M,A,B] # Combination
+
+Strings
+* %s[strA,strB,strC] # Selection, quotation marks assumed
+* %s["strA,strB",strC] # Selection, use quotes to use comma in word
+* %s[\"strA\",strB,strC] # Selection, escape quotes to include in string
+* %s/[0-9]{3}[0-9]{3}[0-9]{4}/ # Regex string, use forward slashes to indicate
+
+Regex Templates
+* [] # Selection, will select one from range and/or letters inside
+* () # Selection, will select one of the words
+* {} # Repetition, will repeat previous choice the specified number of times
