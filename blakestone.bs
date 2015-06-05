@@ -13,6 +13,8 @@ key:
 	: 120 # A value with no key before the colon defaults to the index
 	: # An array at index 7
 		"Value in array"
+		"With another value"
+		15
 	template:
 		randomIntSelection: %d[2,3,5,7,13,17]
 		randomIntRange: %d[1-100]
