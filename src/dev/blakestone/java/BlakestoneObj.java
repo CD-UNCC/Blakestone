@@ -7,6 +7,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,11 +17,19 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.sun.media.sound.InvalidFormatException;
+
 public class BlakestoneObj {
 	// REGEX FORMATS
 	private final static String INTEGER_REGEX = "(?:%d\\[.+\\]|\\d+)";
 	private final static String FLOATING_POINT_REGEX = "(?:%f(?:\\.\\d+)?\\[.+\\]|\\d*\\.\\d+)";
 	private final static String STRING_REGEX = "(?:%s\\/.+\\/|%s\\[.+\\]|\".+\")";
+	
+	private final static String INTEGER_TEMPLATE_REGEX = "%d\\[((?:-?\\d+|-?\\d+--?\\d+)(?:,(?:-?\\d+|-?\\d+--?\\d+))*)\\]";
+	private final static String FLOATING_POINT_TEMPLATE_REGEX 
+		= "%f(?:\\.(\\d+))?\\[((?:(?:(?<=\\[)|,)\\s*-?\\d+(?:\\.\\d+)?\\s*(?:-\\s*-?\\d+(?:\\.\\d+)?)?)+)\\]";
+	private final static String STRING_TEMPLATE_REGEX = "%s\\[((?:(?<=\\[)|,)(?:\\s*.+))\\]";
+	private final static String STRING_TEMPLATE_ITEM_REGEX = "((?:\".+\"|[^,]+))";
 	
 	// PATTERNS
 	private final static Pattern INTEGER_PATTERN = Pattern.compile(INTEGER_REGEX);
@@ -86,7 +97,7 @@ public class BlakestoneObj {
 		return result;
 	}
 	
-	public static BlakestoneObj read(InputStream in) throws IOException {
+	public static BlakestoneObj read(InputStream in) throws IOException, BlakestoneFormatException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 		String line;
 		String indent = null;
@@ -113,6 +124,8 @@ public class BlakestoneObj {
 					line = line.substring(indent.length());
 				}
 			
+			if (level > lastLevel + 1)
+				throw new BlakestoneFormatException(BlakestoneFormatException.INVALID_INDENTATION);
 			
 			if (level < lastLevel)
 				currentParent.pop();
@@ -184,4 +197,39 @@ public class BlakestoneObj {
 	}
 	
 	public static BlakestoneObj read(File f) throws IOException, FileNotFoundException { return read(new FileInputStream(f)); }
+	
+	public static <T> T loadIntoClass(Class<T> targetType, File file) throws InstantiationException, IllegalAccessException, FileNotFoundException, IOException {
+		if (!targetType.isAnnotationPresent(BSClass.class))
+			throw new InvalidParameterException("The target class is not annotated as a Blakestone Class with '@BSClass'");
+		
+		BlakestoneObj source = read(file);
+		BSField ann;
+				
+		T result = targetType.newInstance();
+		
+		for (Field f : targetType.getDeclaredFields())
+			if ((ann = f.getAnnotation(BSField.class)) != null) {
+				f.setAccessible(true);
+				f.set(result, source.get(ann.value()));
+				f.setAccessible(false);
+			}				
+		
+		return result;
+	}
+	
+	public static class BlakestoneFormatException extends InvalidFormatException {
+		public final static int INVALID_INDENTATION = 0;
+		
+		private final static String[] ERROR_MESSAGES = {
+			"Invalid format, extra indentation used in source file",
+			"Invalid integer template format",
+			"Invalid floating point template format",
+			"Invalid string template format",
+			"Invalid template repetition format"
+		};
+		
+		public BlakestoneFormatException(int errorCode) {
+			super(ERROR_MESSAGES[errorCode]);
+		}
+	}
 }

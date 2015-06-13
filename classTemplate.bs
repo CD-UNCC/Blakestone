@@ -1,0 +1,4 @@
+firstInt: 10
+firstString: "Place in class"
+UnusedValues:
+	"TwentyThree"
